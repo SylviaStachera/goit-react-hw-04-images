@@ -1,8 +1,25 @@
 @import-normalize;
 
+html {
+  box-sizing: border-box;
+  width: 100vw;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
 body {
+  margin: 0;
   font-family: 'Open Sans', sans-serif;
   line-height: 1.5;
+  color: #212121;
+  background-color: #fff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 h1,
@@ -21,11 +38,9 @@ img {
   height: auto;
 }
 
-.wraper {
-  margin-top: 15px;
-  margin-left: 15px;
-  width: 400px;
-  display: flex;
-  flex-direction: column;
-  /* background-color: aquamarine; */
+.app {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-gap: 16px;
+  padding-bottom: 24px;
 }
