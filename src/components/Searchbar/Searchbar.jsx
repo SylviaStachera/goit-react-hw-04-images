@@ -40,7 +40,7 @@ class Searchbar extends Component {
           />
 
           <button type="submit" className={css['searchForm-button']}>
-            <span className="">Search</span>
+            <span>Search</span>
           </button>
         </form>
       </header>
