@@ -9,15 +9,17 @@ class ImageGallery extends Component {
     const { images } = this.props;
 
     return (
-      <ul className={css.imageGallery}>
-        {images.map(({ id, tags, webformatURL, largeImageURL }) => (
-          <ImageGalleryItem
-            key={id}
-            tags={tags}
-            smallImageUrl={webformatURL}
-          />
-        ))}
-      </ul>
+      <>
+        <ul className={css.imageGallery}>
+          {images.map(({ id, tags, webformatURL, largeImageURL }) => (
+            <ImageGalleryItem
+              key={id}
+              tags={tags}
+              smallImageUrl={webformatURL}
+            />
+          ))}
+        </ul>
+      </>
     );
   }
 }

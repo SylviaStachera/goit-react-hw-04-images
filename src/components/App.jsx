@@ -1,6 +1,7 @@
 import fetchImages from './services/api';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
+import Button from './Button/Button';
 
 import { Notify } from 'notiflix';
 import { Component } from 'react';
@@ -18,8 +19,8 @@ export class App extends Component {
     this.setState({ inputValue: searchQuery });
   };
 
-  handlePageChange = numberPage => {
-    this.setState({ page: numberPage });
+  handlePageChange = () => {
+    this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
   getImages = async () => {
@@ -31,10 +32,15 @@ export class App extends Component {
       const imagesData = await fetchImages(inputValue, page);
       const images = imagesData.hits;
       console.log(images);
-      this.setState({ images, loading: false, error: null });
+      console.log(page);
+      this.setState(prevState => ({
+        images: [...prevState.images, ...images],
+      }));
     } catch (err) {
       Notify.failure(`Sorry something went wrong: ${err.message}`);
-      this.setState({ error: err, loading: false });
+      this.setState({ error: err });
+    } finally {
+      this.setState({ loading: false });
     }
   };
 
@@ -48,17 +54,15 @@ export class App extends Component {
   }
 
   render() {
-    const { images, inputValue, page, loading, error } = this.state;
+    const { images, loading, error } = this.state;
 
     return (
       <div className="app">
-        <Searchbar
-          onInputValue={this.handleInputValue}
-          onPageChange={this.handlePageChange}
-        />
+        <Searchbar onInputValue={this.handleInputValue} />
         {loading && <p>Ładowanie artykułów</p>}
         {error !== null && <p>Wystąpił błąd!</p>}
-        <ImageGallery inputValue={inputValue} page={page} images={images} />
+        <ImageGallery images={images} />
+        {images.length > 0 && <Button onClick={this.handlePageChange} />}
       </div>
     );
   }
