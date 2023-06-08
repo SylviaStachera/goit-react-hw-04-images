@@ -2,6 +2,7 @@ import fetchImages from './services/api';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Button from './Button/Button';
+import Loader from './Loader/Loader';
 
 import { Notify } from 'notiflix';
 import { Component } from 'react';
@@ -16,6 +17,10 @@ export class App extends Component {
   };
 
   handleInputValue = searchQuery => {
+    if (this.state.inputValue === searchQuery) {
+      return;
+    }
+    this.resetState();
     this.setState({ inputValue: searchQuery });
   };
 
@@ -31,8 +36,8 @@ export class App extends Component {
     try {
       const imagesData = await fetchImages(inputValue, page);
       const images = imagesData.hits;
-      console.log(images);
-      console.log(page);
+      // console.log(images);
+      // console.log(page);
       this.setState(prevState => ({
         images: [...prevState.images, ...images],
       }));
@@ -53,15 +58,22 @@ export class App extends Component {
     }
   }
 
+  resetState = () => {
+    this.setState({
+      inputValue: '',
+      page: 1,
+      images: [],
+    });
+  };
+
   render() {
-    const { images, loading, error } = this.state;
+    const { images, loading } = this.state;
 
     return (
       <div className="app">
         <Searchbar onInputValue={this.handleInputValue} />
-        {loading && <p>Ładowanie artykułów</p>}
-        {error !== null && <p>Wystąpił błąd!</p>}
-        <ImageGallery images={images} />
+        {loading && <Loader />}
+        {images.length > 0 && <ImageGallery images={images} />}
         {images.length > 0 && <Button onClick={this.handlePageChange} />}
       </div>
     );
