@@ -3,6 +3,7 @@ import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Button from './Button/Button';
 import Loader from './Loader/Loader';
+import Modal from './Modal/Modal';
 
 import { Notify } from 'notiflix';
 import { Component } from 'react';
@@ -12,8 +13,11 @@ export class App extends Component {
     inputValue: '',
     page: 1,
     images: [],
-    loading: false,
+    isLoading: false,
     error: null,
+    isSelectedImage: false,
+    modalImage: null,
+    alt: null,
   };
 
   handleInputValue = searchQuery => {
@@ -28,10 +32,21 @@ export class App extends Component {
     this.setState(prevState => ({ page: prevState.page + 1 }));
   };
 
+  handleModalImageUrl = (largeImageURL, tags) => {
+    if (this.state.modalImage === largeImageURL) {
+      return;
+    }
+    this.setState({
+      isSelectedImage: true,
+      modalImage: largeImageURL,
+      alt: tags,
+    });
+  };
+
   getImages = async () => {
     const { inputValue, page } = this.state;
 
-    this.setState({ loading: true });
+    this.setState({ isLoading: true });
 
     try {
       const imagesData = await fetchImages(inputValue, page);
@@ -45,7 +60,7 @@ export class App extends Component {
       Notify.failure(`Sorry something went wrong: ${err.message}`);
       this.setState({ error: err });
     } finally {
-      this.setState({ loading: false });
+      this.setState({ isLoading: false });
     }
   };
 
@@ -67,14 +82,20 @@ export class App extends Component {
   };
 
   render() {
-    const { images, loading } = this.state;
+    const { images, isLoading, modalImage, alt, isSelectedImage } = this.state;
 
     return (
       <div className="app">
         <Searchbar onInputValue={this.handleInputValue} />
-        {loading && <Loader />}
-        {images.length > 0 && <ImageGallery images={images} />}
+        {isLoading && <Loader />}
+        {images.length > 0 && (
+          <ImageGallery
+            images={images}
+            modalImageUrl={this.handleModalImageUrl}
+          />
+        )}
         {images.length > 0 && <Button onClick={this.handlePageChange} />}
+        {isSelectedImage && <Modal modalImage={modalImage} alt={alt} />}
       </div>
     );
   }

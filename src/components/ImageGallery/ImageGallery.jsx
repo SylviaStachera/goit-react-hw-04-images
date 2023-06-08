@@ -6,7 +6,7 @@ import { Component } from 'react';
 
 class ImageGallery extends Component {
   render() {
-    const { images } = this.props;
+    const { images, modalImageUrl } = this.props;
 
     return (
       <>
@@ -16,6 +16,7 @@ class ImageGallery extends Component {
               key={id}
               tags={tags}
               smallImageUrl={webformatURL}
+              modalImageUrl={() => modalImageUrl(largeImageURL, tags)}
             />
           ))}
         </ul>
