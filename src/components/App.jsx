@@ -43,6 +43,10 @@ export class App extends Component {
     });
   };
 
+  handleModalClose = () => {
+    this.setState({ isSelectedImage: false });
+  };
+
   getImages = async () => {
     const { inputValue, page } = this.state;
 
@@ -51,8 +55,6 @@ export class App extends Component {
     try {
       const imagesData = await fetchImages(inputValue, page);
       const images = imagesData.hits;
-      // console.log(images);
-      // console.log(page);
       this.setState(prevState => ({
         images: [...prevState.images, ...images],
       }));
@@ -95,7 +97,13 @@ export class App extends Component {
           />
         )}
         {images.length > 0 && <Button onClick={this.handlePageChange} />}
-        {isSelectedImage && <Modal modalImage={modalImage} alt={alt} />}
+        {isSelectedImage && (
+          <Modal
+            modalImage={modalImage}
+            alt={alt}
+            onClose={this.handleModalClose}
+          />
+        )}
       </div>
     );
   }
