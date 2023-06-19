@@ -6,7 +6,9 @@ const Searchbar = ({ onInputValue }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleChange = evt => {
-    setSearchQuery(evt.currentTarget.value.toLowerCase());
+    const newSearchQuery = evt.currentTarget.value.toLowerCase();
+    setSearchQuery(newSearchQuery);
+    onInputValue(newSearchQuery);
   };
 
   const handleSubmit = evt => {
@@ -40,7 +42,7 @@ const Searchbar = ({ onInputValue }) => {
 };
 
 Searchbar.propTypes = {
-  onSubmit: PropTypes.func,
+  onInputValue: PropTypes.func,
 };
 
 export default Searchbar;

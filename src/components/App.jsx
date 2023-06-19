@@ -6,105 +6,101 @@ import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
 
 import { Notify } from 'notiflix';
-import { Component } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-export class App extends Component {
-  state = {
-    inputValue: '',
-    page: 1,
-    images: [],
-    isLoading: false,
-    error: null,
-    isSelectedImage: false,
-    modalImage: null,
-    alt: null,
+export const App = ({ searchQuery }) => {
+  const [inputValue, setInputValue] = useState('');
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [isSelectedImage, setIsSelectedImage] = useState(false);
+  const [modalImage, setModalImage] = useState(null);
+  const [alt, setAlt] = useState(null);
+
+  const inputValueRef = useRef();
+  const pageRef = useRef();
+
+  const resetState = () => {
+    setInputValue('');
+    setPage(1);
+    setImages([]);
   };
 
-  handleInputValue = searchQuery => {
-    if (this.state.inputValue === searchQuery) {
+  const handleInputValue = useCallback(
+    searchQuery => {
+      if (inputValue === searchQuery) {
+        return;
+      }
+      resetState();
+
+      setInputValue(searchQuery);
+    },
+    [inputValue]
+  );
+
+  const handlePageChange = () => {
+    setPage(prevPage => prevPage + 1);
+  };
+
+  const handleModalImageUrl = (largeImageURL, tags) => {
+    if (modalImage === largeImageURL) {
       return;
     }
-    this.resetState();
-    this.setState({ inputValue: searchQuery });
+    setIsSelectedImage(true);
+    setModalImage(largeImageURL);
+    setAlt(tags);
   };
 
-  handlePageChange = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+  const handleModalClose = () => {
+    setIsSelectedImage(false);
   };
 
-  handleModalImageUrl = (largeImageURL, tags) => {
-    if (this.state.modalImage === largeImageURL) {
-      return;
-    }
-    this.setState({
-      isSelectedImage: true,
-      modalImage: largeImageURL,
-      alt: tags,
-    });
-  };
-
-  handleModalClose = () => {
-    this.setState({ isSelectedImage: false });
-  };
-
-  getImages = async () => {
-    const { inputValue, page } = this.state;
-
-    this.setState({ isLoading: true });
+  const getImages = useCallback(async () => {
+    setIsLoading(true);
 
     try {
       const imagesData = await fetchImages(inputValue, page);
       const images = imagesData.hits;
-      this.setState(prevState => ({
-        images: [...prevState.images, ...images],
-      }));
-    } catch (err) {
-      Notify.failure(`Sorry something went wrong: ${err.message}`);
-      this.setState({ error: err });
+      setImages(prevImage => [...prevImage, ...images]);
+    } catch (error) {
+      Notify.failure(`Sorry something went wrong: ${error.message}`);
+      setError(error);
     } finally {
-      this.setState({ isLoading: false });
+      setIsLoading(false);
     }
-  };
+  }, [inputValue, page]);
 
-  componentDidUpdate(prevProps, prevState) {
+  useEffect(() => {
+    const prevInputValue = inputValueRef.current;
+    const prevPage = pageRef.current;
+
     if (
-      prevState.inputValue !== this.state.inputValue ||
-      prevState.page !== this.state.page
+      inputValue &&
+      page &&
+      (prevInputValue !== inputValue || prevPage !== page)
     ) {
-      this.getImages();
+      getImages();
     }
-  }
 
-  resetState = () => {
-    this.setState({
-      inputValue: '',
-      page: 1,
-      images: [],
-    });
-  };
+    inputValueRef.current = inputValue;
+    pageRef.current = page;
+  }, [inputValue, page, getImages]);
 
-  render() {
-    const { images, isLoading, modalImage, alt, isSelectedImage } = this.state;
-
-    return (
-      <div className="app">
-        <Searchbar onInputValue={this.handleInputValue} />
-        {isLoading && <Loader />}
-        {images.length > 0 && (
-          <ImageGallery
-            images={images}
-            modalImageUrl={this.handleModalImageUrl}
-          />
-        )}
-        {images.length > 0 && <Button onClick={this.handlePageChange} />}
-        {isSelectedImage && (
-          <Modal
-            modalImage={modalImage}
-            alt={alt}
-            onClose={this.handleModalClose}
-          />
-        )}
-      </div>
-    );
-  }
-}
+  return (
+    <div className="app">
+      <Searchbar
+        forwardRef={(inputValueRef, pageRef)}
+        onInputValue={handleInputValue}
+      />
+      {isLoading && <Loader />}
+      {images.length > 0 && (
+        <ImageGallery images={images} modalImageUrl={handleModalImageUrl} />
+      )}
+      {images.length > 0 && <Button onClick={handlePageChange} />}
+      {isSelectedImage && (
+        <Modal modalImage={modalImage} alt={alt} onClose={handleModalClose} />
+      )}
+    </div>
+  );
+};
