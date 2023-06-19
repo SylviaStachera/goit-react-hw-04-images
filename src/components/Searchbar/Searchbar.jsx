@@ -12,8 +12,6 @@ const Searchbar = ({ onInputValue }) => {
   const handleSubmit = evt => {
     evt.preventDefault();
 
-    // const { searchQuery } = this.state;
-
     onInputValue(searchQuery);
 
     onInputValue('');
