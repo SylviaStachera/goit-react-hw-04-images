@@ -6,7 +6,7 @@ import Loader from './Loader/Loader';
 import Modal from './Modal/Modal';
 
 import { Notify } from 'notiflix';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export const App = ({ searchQuery }) => {
   const [inputValue, setInputValue] = useState('');
@@ -17,9 +17,7 @@ export const App = ({ searchQuery }) => {
   const [isSelectedImage, setIsSelectedImage] = useState(false);
   const [modalImage, setModalImage] = useState(null);
   const [alt, setAlt] = useState(null);
-
-  const inputValueRef = useRef();
-  const pageRef = useRef();
+  const [isFormSubmitted, setIsFormSubmitted] = useState(false);
 
   const resetState = () => {
     setInputValue('');
@@ -27,17 +25,14 @@ export const App = ({ searchQuery }) => {
     setImages([]);
   };
 
-  const handleInputValue = useCallback(
-    searchQuery => {
-      if (inputValue === searchQuery) {
-        return;
-      }
-      resetState();
+  const handleInputValue = searchQuery => {
+    if (inputValue === searchQuery) {
+      return;
+    }
+    resetState();
 
-      setInputValue(searchQuery);
-    },
-    [inputValue]
-  );
+    setInputValue(searchQuery);
+  };
 
   const handlePageChange = () => {
     setPage(prevPage => prevPage + 1);
@@ -56,43 +51,34 @@ export const App = ({ searchQuery }) => {
     setIsSelectedImage(false);
   };
 
-  const getImages = useCallback(async () => {
-    setIsLoading(true);
-
-    try {
-      const imagesData = await fetchImages(inputValue, page);
-      const images = imagesData.hits;
-      setImages(prevImage => [...prevImage, ...images]);
-    } catch (error) {
-      Notify.failure(`Sorry something went wrong: ${error.message}`);
-      setError(error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [inputValue, page]);
+  const handleSubmit = () => {
+    setIsFormSubmitted(true);
+  };
 
   useEffect(() => {
-    const prevInputValue = inputValueRef.current;
-    const prevPage = pageRef.current;
+    const getImages = async () => {
+      if (isFormSubmitted && inputValue && page) {
+        setIsLoading(true);
 
-    if (
-      inputValue &&
-      page &&
-      (prevInputValue !== inputValue || prevPage !== page)
-    ) {
-      getImages();
-    }
+        try {
+          const imagesData = await fetchImages(inputValue, page);
+          const images = imagesData.hits;
+          setImages(prevImage => [...prevImage, ...images]);
+        } catch (error) {
+          Notify.failure(`Sorry something went wrong: ${error.message}`);
+          setError(error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
 
-    inputValueRef.current = inputValue;
-    pageRef.current = page;
-  }, [inputValue, page, getImages]);
+    getImages();
+  }, [inputValue, page, isFormSubmitted]);
 
   return (
     <div className="app">
-      <Searchbar
-        forwardRef={(inputValueRef, pageRef)}
-        onInputValue={handleInputValue}
-      />
+      <Searchbar onInputValue={handleInputValue} onSubmit={handleSubmit} />
       {isLoading && <Loader />}
       {images.length > 0 && (
         <ImageGallery images={images} modalImageUrl={handleModalImageUrl} />

@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import css from './Searchbar.module.css';
 import { useState } from 'react';
 
-const Searchbar = ({ onInputValue }) => {
+const Searchbar = ({ onInputValue, onSubmit }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleChange = evt => {
@@ -14,9 +14,9 @@ const Searchbar = ({ onInputValue }) => {
   const handleSubmit = evt => {
     evt.preventDefault();
 
-    onInputValue(searchQuery);
+    onSubmit(searchQuery);
 
-    onInputValue('');
+    setSearchQuery('');
   };
 
   return (
